@@ -1,10 +1,10 @@
 auth
 ====
 
-taironas/auth extracts provider data (client & secret keys) from JSON object and returns authentication data.
+taironas/auth returns authenticated user data from ID token.
 
 ## Supported Provider
 
-* Google
+* Google: https://developers.google.com/identity/sign-in/web/backend-auth
 
 
