@@ -6,6 +6,7 @@
 	<head>
 	<body>
     <div class="g-signin2" data-onsuccess="onSignIn"></div>
+    <div id="signin"></div>
     <a href="#" onclick="signOut();">Sign out</a>
 	</body>
   <script src="https://apis.google.com/js/platform.js" async defer></script>
@@ -17,7 +18,8 @@
     xhr.open('POST', 'http://localhost:8080/api/token');
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     xhr.onload = function() {
-      console.log('Signed in as: ' + xhr.responseText);
+      var user = JSON.parse(xhr.responseText);
+      document.getElementById('signin').innerHTML = '<p>Welcome ' + user.Name + '!</p>';
     };
     xhr.send('id_token=' + id_token);
   }
@@ -26,6 +28,7 @@
   function signOut() {
     var auth2 = gapi.auth2.getAuthInstance();
     auth2.signOut().then(function () {
+      document.getElementById('signin').innerHTML = '';
       console.log('User signed out.');
     });
   }
