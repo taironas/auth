@@ -3,34 +3,34 @@
   <head>
     <title>taironas/auth Example</title>
     <meta name="google-signin-client_id" content="1071435158448-svr65jb9ko1cs96lqvelvkhp9lfmhnc9.apps.googleusercontent.com">
-	<head>
-	<body>
-    <div class="g-signin2" data-onsuccess="onSignIn"></div>
-    <div id="signin"></div>
-    <a href="#" onclick="signOut();">Sign out</a>
-	</body>
+  </head>
+  <body>
+      <div class="g-signin2" data-onsuccess="onSignIn"></div>
+      <div id="signin"></div>
+      <a href="#" onclick="signOut();">Sign out</a>
+  </body>
   <script src="https://apis.google.com/js/platform.js" async defer></script>
   <script type="text/javascript">
-  function onSignIn(googleUser) {
+    function onSignIn(googleUser) {
     var id_token = googleUser.getAuthResponse().id_token;
-
+    
     var xhr = new XMLHttpRequest();
     xhr.open('POST', 'http://localhost:8080/api/token');
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     xhr.onload = function() {
-      var user = JSON.parse(xhr.responseText);
-      document.getElementById('signin').innerHTML = '<p>Welcome ' + user.Name + '!</p>';
+    var user = JSON.parse(xhr.responseText);
+    document.getElementById('signin').innerHTML = '<p>Welcome ' + user.Name + '!</p>';
     };
     xhr.send('id_token=' + id_token);
-  }
+    }
   </script>
   <script type="text/javascript">
-  function signOut() {
+    function signOut() {
     var auth2 = gapi.auth2.getAuthInstance();
     auth2.signOut().then(function () {
-      document.getElementById('signin').innerHTML = '';
-      console.log('User signed out.');
+    document.getElementById('signin').innerHTML = '';
+    console.log('User signed out.');
     });
-  }
-</script>
-<html>
+    }
+  </script>
+</html>
