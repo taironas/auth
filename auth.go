@@ -9,26 +9,35 @@ import (
 	"strings"
 )
 
-// Google returns Google user from the given ID token
+// Google returns Google user from the given ID token.
+//
 func Google(IDToken string) (*User, error) {
-	// validate the provided ID token
-	ti, err := validateIDToken(IDToken)
 
-	if err != nil {
+	var err error
+
+	// validate the provided ID token
+	var ti *tokenInfo
+	if ti, err = validateIDToken(IDToken); err != nil {
 		return nil, err
 	}
 
 	// Get the user name
-	name, err := extractNameFromToken(IDToken)
-
-	if err != nil {
+	var name string
+	if name, err = extractNameFromToken(IDToken); err != nil {
 		return nil, err
 	}
 
-	return &User{ID: ti.UserID, Name: name, Email: ti.Email}, err
+	user := User{
+		ID:    ti.UserID,
+		Name:  name,
+		Email: ti.Email,
+	}
+
+	return &user, err
 }
 
-// User represents the authenticated user
+// User represents the authenticated user.
+//
 type User struct {
 	ID    string
 	Name  string
@@ -45,58 +54,64 @@ type tokenInfo struct {
 }
 
 func validateIDToken(token string) (*tokenInfo, error) {
-	// Verification of the integrity of the ID token
-	res, err := http.Get("https://www.googleapis.com/oauth2/v2/tokeninfo?id_token=" + token)
 
-	if err != nil {
+	var err error
+	// Verification of the integrity of the ID token
+	var resp *http.Response
+	if resp, err = http.Get("https://www.googleapis.com/oauth2/v2/tokeninfo?id_token=" + token); err != nil {
 		return nil, err
 	}
 
-	if res == nil || res.StatusCode != http.StatusOK {
+	if resp == nil || resp.StatusCode != http.StatusOK {
 		// Bad request
-		return nil, errors.New("Provided ID token is not valid.")
+		return nil, errors.New("Provided ID token is not valid")
 	}
 
 	// read the JSON token info
-	body, err := ioutil.ReadAll(res.Body)
-	res.Body.Close()
+	var body []byte
 
-	if err != nil {
+	if body, err = ioutil.ReadAll(resp.Body); err != nil {
 		return nil, err
 	}
+
+	resp.Body.Close()
 
 	// decode the JSON token info
 	var ti *tokenInfo
 	json.Unmarshal(body, &ti)
 
-	return ti, nil
+	return ti, err
 }
 
 func extractNameFromToken(token string) (string, error) {
-	// split the token by '.'
+
 	parts := strings.Split(token, ".")
 	// token is a JWT (http://jwt.io/)
 	if len(parts) != 3 {
-		return "", errors.New("Provided token is not valid.")
+		return "", errors.New("Provided token is not valid")
 	}
 
 	// decode the second part (claims) containing the name
-	claimBytes, err := decodePart(parts[1])
-
-	if err != nil {
+	var err error
+	var claimBytes []byte
+	if claimBytes, err = decodePart(parts[1]); err != nil {
 		return "", err
 	}
 
 	var claims map[string]interface{}
 	json.Unmarshal(claimBytes, &claims)
 
-	name, _ := claims["name"].(string)
+	var name string
+	var ok bool
+	if name, ok = claims["name"].(string); !ok {
+		return "", errors.New("Unable to decode name from token")
+	}
 
-	// read the JSON and get the name
 	return name, nil
 }
 
 func decodePart(p string) ([]byte, error) {
+
 	// need padding to have a multiple of four characters and avoid a base64 error
 	if l := len(p) % 4; l > 0 {
 		p += strings.Repeat("=", 4-l)
