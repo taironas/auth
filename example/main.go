@@ -4,20 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"text/template"
 
 	"github.com/taironas/auth"
 )
 
 func main() {
-	http.HandleFunc("/", indexHandler)
+	http.Handle("/", http.FileServer(http.Dir(".")))
 	http.HandleFunc("/api/token", tokenHandler)
 	http.ListenAndServe(":8080", nil)
-}
-
-func indexHandler(w http.ResponseWriter, r *http.Request) {
-	t, _ := template.ParseFiles("./index.html")
-	t.Execute(w, nil)
 }
 
 func tokenHandler(w http.ResponseWriter, r *http.Request) {
